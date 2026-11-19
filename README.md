@@ -46,12 +46,12 @@ This CUDA configuration is not directly usable on an AMD-only, Intel-only or mac
 On the owner's GitHub repository, select **Fork > Create fork**, then clone your fork:
 
 ~~~bash
-git clone https://github.com/FRIEND_USERNAME/Multi-Layer-Rag-Model.git
-cd Multi-Layer-Rag-Model
-git remote add upstream https://github.com/MohammedFazal-B/Multi-Layer-Rag-Model.git
+git clone https://github.com/FRIEND_USERNAME/Velnastra.git
+cd Velnastra
+git remote add upstream https://github.com/MohammedFazal-B/Velnastra.git
 ~~~
 
-Replace FRIEND_USERNAME with your account. The repository name is retained; the product displayed in the app is Velnastra.
+Replace FRIEND_USERNAME with your account. The repository and product are both named Velnastra.
 
 For a private repository, the owner must grant access first. Private forking depends on account/repository policies. If Fork is unavailable, an invited collaborator can clone the owner's repository directly.
 
@@ -142,7 +142,7 @@ To sync a fork later, use GitHub's Sync fork control or fetch upstream and merge
 
 This folder already has Git history, branch main and this origin:
 
-https://github.com/MohammedFazal-B/Multi-Layer-Rag-Model.git
+https://github.com/MohammedFazal-B/Velnastra.git
 
 No Git reinitialization, remote creation or force push is required for that repository.
 
