@@ -1,77 +1,73 @@
+"""Local request telemetry; failures must never alter classifier verdicts."""
+from contextlib import closing
+from datetime import datetime, timezone
 import sqlite3
-import time
-from datetime import datetime
-import os
+from src.config import DATA_DIR
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "firewall_analytics.db")
+DB_PATH = DATA_DIR / "firewall_analytics.db"
+
+
+def _connect():
+    return sqlite3.connect(DB_PATH, timeout=30)
+
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS requests (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            prompt TEXT,
-            status TEXT,
-            reason TEXT,
-            score REAL,
-            latency_ms REAL
-        )
-    ''')
-    conn.commit()
-    conn.close()
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with closing(_connect()) as conn, conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT,
+                prompt TEXT, status TEXT, reason TEXT, score REAL,
+                latency_ms REAL, category TEXT
+            )
+        """)
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(requests)")}
+        if "category" not in columns:
+            conn.execute("ALTER TABLE requests ADD COLUMN category TEXT")
 
-def log_request(prompt, status, reason, score, latency_ms):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO requests (timestamp, prompt, status, reason, score, latency_ms)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (datetime.utcnow().isoformat(), prompt, status, str(reason) if reason else "", score, latency_ms))
-    conn.commit()
-    conn.close()
+
+def log_request(prompt, status, reason, score, latency_ms, category=None):
+    with closing(_connect()) as conn, conn:
+        cursor = conn.execute("""
+            INSERT INTO requests (timestamp, prompt, status, reason, score, latency_ms, category)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (datetime.now(timezone.utc).isoformat(), prompt, status,
+              str(reason or ""), score, latency_ms, category))
+        request_id = cursor.lastrowid
+    return request_id
+
+
+def get_recent_requests(limit=30):
+    """Read the latest local audit records for the operator activity view."""
+    if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 100:
+        raise ValueError("Activity limit must be between 1 and 100")
+    with closing(_connect()) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute("""
+            SELECT id, timestamp, prompt, status, reason, category, score, latency_ms
+            FROM requests ORDER BY id DESC LIMIT ?
+        """, (limit,)).fetchall()
+        return [dict(row) for row in rows]
+
 
 def get_analytics_stats():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    # Total requests
-    cursor.execute('SELECT COUNT(*) FROM requests')
-    total = cursor.fetchone()[0]
-    
-    # Blocked requests
-    cursor.execute('SELECT COUNT(*) FROM requests WHERE status = "BLOCK"')
-    blocked = cursor.fetchone()[0]
-    
-    # Allowed requests
-    cursor.execute('SELECT COUNT(*) FROM requests WHERE status = "ALLOW"')
-    allowed = cursor.fetchone()[0]
-    
-    # Average latency
-    cursor.execute('SELECT AVG(latency_ms) FROM requests')
-    avg_latency = cursor.fetchone()[0] or 0.0
-    
-    # Top attack categories
-    cursor.execute('''
-        SELECT reason, COUNT(*) as count 
-        FROM requests 
-        WHERE status = "BLOCK" AND reason != ""
-        GROUP BY reason 
-        ORDER BY count DESC 
-        LIMIT 5
-    ''')
-    top_categories = [{"category": row[0], "count": row[1]} for row in cursor.fetchall()]
-    
-    conn.close()
-    
-    return {
-        "total_requests": total,
-        "blocked_requests": blocked,
-        "allowed_requests": allowed,
-        "average_latency_ms": round(avg_latency, 2),
-        "top_attack_categories": top_categories
-    }
+    with closing(_connect()) as conn:
+        total, blocked, allowed, latency = conn.execute("""
+            SELECT COUNT(*), SUM(status = 'BLOCK'), SUM(status = 'ALLOW'), AVG(latency_ms)
+            FROM requests
+        """).fetchone()
+        categories = [
+            {"category": category, "count": count}
+            for category, count in conn.execute("""
+                SELECT COALESCE(category, 'unknown'), COUNT(*)
+                FROM requests WHERE status = 'BLOCK'
+                GROUP BY COALESCE(category, 'unknown')
+                ORDER BY COUNT(*) DESC LIMIT 5
+            """)
+        ]
+    return {"total_requests":total, "blocked_requests":blocked or 0,
+            "allowed_requests":allowed or 0, "average_latency_ms":round(latency or 0.0,2),
+            "top_attack_categories":categories}
 
-# Initialize DB on import
+
 init_db()

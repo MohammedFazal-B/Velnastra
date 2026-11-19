@@ -1,0 +1,6 @@
+{
+  "filename": "Qwen3.5-9B.Q4_K_M.gguf",
+  "size_bytes": 5780090592,
+  "sha256_local_reference": "4fffc67e7d22b6337150aaf3948f5d2d1789cb4b375a5fac83adcde7a19076c2",
+  "note": "Fingerprint of the local file reviewed for this project, not a publisher verification or proof of fine-tuning. Obtain the model separately from a source you are authorized to use. Model weights are not distributed with this repository."
+}

@@ -1,9 +1,15 @@
-datasets
-pandas
-pyarrow
-sentence-transformers
-qdrant-client
---extra-index-url https://download.pytorch.org/whl/cu121
-torch==2.4.0+cu121
---extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121
-llama-cpp-python
+datasets==3.6.0
+pandas==2.3.3
+pyarrow==25.0.1
+sentence-transformers==3.4.1
+transformers==4.47.1
+qdrant-client==1.20.0
+apscheduler==3.11.3
+tqdm==4.70.1
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.7.1+cu128
+--extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu128
+llama-cpp-python==0.3.37
+
+requests==2.34.2
+pytest==9.2.0

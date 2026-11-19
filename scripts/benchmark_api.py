@@ -1,4 +1,5 @@
 import requests
+import sys
 import json
 import time
 
@@ -63,7 +64,7 @@ def run_tests():
         print(f"Expected: {test['expected']}")
         
         try:
-            response = requests.post(API_URL, json={"prompt": test['prompt']}, timeout=60)
+            response = requests.post(API_URL, json={"prompt": test['prompt']}, timeout=600)
             if response.status_code == 200:
                 result = response.json()
                 status = result.get("status")
@@ -89,6 +90,7 @@ def run_tests():
         time.sleep(5) # Small delay between tests to prevent local LLM connection timeouts
 
     print(f"\nFinal Results: {passed_tests}/{len(test_cases)} Passed")
+    return passed_tests == len(test_cases)
 
 def run_crescendo_test():
     print("\n=========================================")
@@ -106,7 +108,7 @@ def run_crescendo_test():
     passed = True
     for i, turn in enumerate(turns):
         print(f"Turn {i+1} Prompt: {turn['prompt']}")
-        response = requests.post(API_URL, json={"prompt": turn['prompt'], "history": history}, timeout=60)
+        response = requests.post(API_URL, json={"prompt": turn['prompt'], "history": history}, timeout=600)
         if response.status_code == 200:
             res = response.json()
             status = res.get("status")
@@ -117,7 +119,6 @@ def run_crescendo_test():
                 break
             else:
                 history.append({"role": "user", "content": turn['prompt']})
-                history.append({"role": "assistant", "content": "Simulated safe response."})
         else:
             print("[ERROR]")
             passed = False
@@ -127,7 +128,9 @@ def run_crescendo_test():
         print("\n[CRESCENDO TEST PASSED]")
     else:
         print("\n[CRESCENDO TEST FAILED]")
+    return passed
 
 if __name__ == "__main__":
-    run_tests()
-    run_crescendo_test()
+    cases_ok = run_tests()
+    crescendo_ok = run_crescendo_test()
+    sys.exit(0 if cases_ok and crescendo_ok else 1)

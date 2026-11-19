@@ -1,8 +1,26 @@
-venv/
-__pycache__/
-.pytest_cache/
-hf_cache/
-qdrant_storage/
-datasets/
-models/
-firewall_analytics.db
+# Only source, diagnostics, manifest and tests enter the image.
+**
+!Dockerfile
+!requirements.txt
+!model-manifest.json
+!src/
+!src/**
+!scripts/
+!scripts/**
+!tests/
+!tests/**
+
+# Never include secrets or generated artifacts, even inside source folders.
+**/.env*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/credentials.json
+**/service-account*.json
+**/__pycache__/**
+**/*.py[cod]
+**/*.log
+**/*.db*
+**/*.gguf
+**/*.safetensors

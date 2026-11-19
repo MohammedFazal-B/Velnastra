@@ -1,52 +1,64 @@
-# ── Secrets ──────────────────────────────────────────────────────────────────
-.env
-.env.local
-.env.*.local
+# Credentials and local configuration
+.env*
+!.env.example
 *.pem
 *.key
+*.p12
+*.pfx
+*.jks
+.aws/
+.ssh/
+credentials.json
+service-account*.json
+.netrc
+.pypirc
 
-# ── Python ────────────────────────────────────────────────────────────────────
+# Private runtime data and model/cache assets
+data/
+models/
+datasets/
+hf_cache/
+qdrant_storage/
+*.gguf
+*.safetensors
+*.pt
+*.pth
+*.db
+*.db-*
+*.sqlite*
+*.log
+*.dump
+*.bak
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Python environments, build and test artifacts
 venv/
 .venv/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
 .Python
 *.egg-info/
 dist/
 build/
-
-# ── Testing / linting ─────────────────────────────────────────────────────────
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 htmlcov/
 .coverage
 
-# ── Large data & model files ──────────────────────────────────────────────────
-datasets/
-qdrant_storage/
-hf_cache/
-models/
-*.db
-*.sqlite
-*.sqlite3
-
-# ── Scratch / one-off scripts ─────────────────────────────────────────────────
+# Machine-specific settings and generated media
+.agents/
+.codex/
+.idea/
+.vscode/
+screenshots/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
 scratch.py
 scratch2.py
 scratch3.py
-
-# ── Screenshots & generated media ─────────────────────────────────────────────
-screenshots/
-
-# ── IDE / editor ─────────────────────────────────────────────────────────────
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# ── OS ────────────────────────────────────────────────────────────────────────
-.DS_Store
-Thumbs.db
