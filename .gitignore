@@ -62,3 +62,18 @@ Thumbs.db
 scratch.py
 scratch2.py
 scratch3.py
+
+# TeX documents and build artifacts (not part of this application)
+*.tex
+*.latex
+*.ltx
+*.bib
+*.sty
+*.cls
+*.aux
+*.bbl
+*.blg
+*.toc
+*.fdb_latexmk
+*.fls
+*.synctex.gz
